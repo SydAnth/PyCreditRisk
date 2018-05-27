@@ -14,6 +14,7 @@ from sklearn import preprocessing
 from sklearn.metrics import roc_auc_score
 import statsmodels.api as sm
 import statsmodels.tools as smt
+import matplotlib.pyplot as plt
 
 
 
@@ -28,8 +29,7 @@ plotly.tools.set_credentials_file(username='SPL2018SS', api_key='X8qHACTMQmxmmsn
 
 data_path = 'C:\\Users\\sydma\\Dropbox\\Uni Sach\Master\\SoSe_18\\Statistical Programming Languages\\Topic\\Loan_Club\\'
 engine = create_engine('sqlite:///' + data_path +'database.sqlite')
-df = pd.read_sql('SELECT * FROM loan',engine)
-
+df = pd.read_sql('SELECT * FROM loan' ,engine)
 """
 numerical_cols=['sub_grade_num', 'short_emp', 'emp_length_num','dti', 'payment_inc_ratio', 'delinq_2yrs', \
                 'delinq_2yrs_zero', 'inq_last_6mths', 'last_delinq_none', 'last_major_derog_none', 'open_acc',\
@@ -38,27 +38,166 @@ numerical_cols=['sub_grade_num', 'short_emp', 'emp_length_num','dti', 'payment_i
 categorical_cols=['grade', 'home_ownership', 'purpose']
 """
 ############# Organize & First Look ###################
-
 cols=sorted(df.columns)
-df[cols].head()
+df[cols[1:25]].head()
 df.info()
+##### Drop iffy loan_status
+
+status = ['Issued','Does not meet the credit policy. Status:Charged Off',
+                    'Does not meet the credit policy. Status:Fully Paid']
+
+
+df = df[~df['loan_status'].isin(status)]
+
 ############# Take sample and define dafualt ###################
 
-df_sample = df.sample(10000)
+
+df_sample = df.sample(10000,random_state = 1)
 df_sample = df_sample[cols]
 
-df_sample['loan_status'].value_counts()
+###################### Convert Date Cols
+df_sample['last_pymnt_d'] = pd.to_datetime(df_sample['last_pymnt_d'])
+df_sample['earliest_cr_line'] = pd.to_datetime(df_sample['earliest_cr_line'])
+
+
+df_sample['final_snp_date'] =  pd.to_datetime('31/01/2016/')
+#### Length of Credit History in Years
+df_sample['cr_hist_yr']=(df_sample['final_snp_date'].dt.to_period('M') - df_sample['earliest_cr_line'].dt.to_period('M')) / 12
+
+######### Drop URL Columns ##############
+
+############# Check if Columns are filled and contain usefull info
+suspect = []
+for numeric_var in df_sample.columns:
+     if  (df_sample[numeric_var].dtype == 'float64' and
+     len(df_sample[numeric_var].unique()) < 100):
+                suspect.append(numeric_var)
+                
+df_sample.columns                
+vars_to_drop = [ 'acc_now_delinq',
+                 'application_type', # too few joints to make a difference
+                 'all_util',
+                 'annual_inc_joint',
+                 'desc',
+                 'collection_recovery_fee', # no interest in collection
+                 'collections_12_mths_ex_med',
+                 'open_acc_6m',
+                 'open_il_12m',
+                 'open_il_24m',
+                 'open_il_6m',
+                 'open_rv_12m',
+                 'open_rv_24m',
+                 'policy_code',
+                 'max_bal_bc',
+                 'last_pymnt_d',#since we have loan_satus we don't need
+                 'next_pymnt_d',#also not useful
+                 'dti_joint',
+                 'inq_fi',
+                 'il_util',
+                 'inq_last_12m',
+                 'inq_last_6mths',
+                 'total_bal_il',
+                 'total_cu_tl',
+                 'tot_coll_amt',
+                 'url', 
+                 'verification_status',
+                 'verification_status_joint',
+                 'member_id'#drop cause df['member_id'].nunique = obs
+                 ,'id']
+df_sample = df_sample.drop(vars_to_drop,axis=1)
 
 # Create default charactersitic: Default and 30+ dpd
 print(df_sample['loan_status'].unique())
-# Questions: What is charged off ?
+# Questions: What is charged off ? 
+             #Charged Off means in goes into collections 150+ dpd default
 #            Does not meet the credit policy ? 
-pass_criteria = ['Current', 'Fully Paid', 'Charged Off', 'In Grace Period',
-                    'Late (16-30 days)', 'Issued',
-                    'Does not meet the credit policy. Status:Charged Off',
-                    'Does not meet the credit policy. Status:Fully Paid']
+pass_criteria = ['Current', 'Fully Paid','In Grace Period',
+                    'Late (16-30 days)', 'Issued','Late (31-120 days)']
 
 df_sample['default'] = np.where(np.isin(df_sample['loan_status'],pass_criteria),0,1)
+
+
+############## Dealing with Null Values #########################
+
+nanCol = []
+for col in df_sample.columns:
+    if df_sample[col].hasnans == True:
+            nanCol.append(col)
+            
+look_at = df_sample[nanCol]
+
+
+
+### Fill Null with 0 since dlq has not happend
+mth_dlq =    ['mths_since_last_delinq',
+              'mths_since_last_major_derog',
+              'mths_since_last_record',
+              'mths_since_rcnt_il', 
+              'tot_cur_bal', # is 0 if customer has no loans
+              'total_rev_hi_lim'] # is 0 if customer has no loans
+for col in mth_dlq:
+   df_sample[col] = df_sample[col].fillna(0)
+   
+##### Employment Title recat as Unemployed   
+df_sample['emp_title'] = df_sample['emp_title'].fillna('Unemployed')
+   
+##### Convert Utilization Ration to Float
+
+df_sample['revol_util'] = df_sample['revol_util'].str.replace('%','').astype(float)
+# Old Credit Line => 0 Denominator
+df_sample[np.isnan(df_sample['revol_util'])]
+df_sample['revol_util'] = df_sample['revol_util'].fillna(0)
+
+
+
+################ Clustering of Variables ########################
+# CLuster Eployment Title
+# Why ? to many values
+
+
+
+
+
+##################### Factorize Categorical Variables #####################
+cat_vars = []
+
+for col in df_sample.columns:
+    if df_sample[col].dtype != 'float64':
+        cat_vars.append(col)
+
+
+
+
+
+
+############### Calculate Simple Correlation Matrix #############
+
+import seaborn as sns
+
+
+corr = df_sample.corr(method='pearson')
+
+
+plt.subplots(figsize=(20,15))
+sns.heatmap(corr)
+### Can be dropped due to high correlations
+vars_to_drop =  ['funded_amnt_inv',
+                'installment',
+                'loan_amnt',
+                'total_pymnt',
+                'total_pymnt_inv',
+                'out_prncp_inv',
+                'total_rec_int']
+df_sample = df_sample.drop(vars_to_drop,axis=1)
+
+
+############### Next Step Chi-Sq
+
+
+
+
+
+
 
 
 
@@ -67,32 +206,32 @@ def Calc_Default_Freq_Cat(cat_var):
     return df_sample['default'].groupby(cat_var).sum() / cat_var.value_counts()
 
 
-import matplotlib.pyplot as plt
 
 ###### Visualizations
 ####### Numerical Variables
 ####### Needs Auto Auto group function
 """
-def hist_num_var(x,Title):
-    
-    #Idea 1 linspace pdf and get appropiate values
-    #Idea 2 freq and amt get even groups
-    #make a categorical variable the rebin categorical var
-    
-    kde  = st.gaussian_kde(x,bw_method=0.1)
-    x_grid = np.linspace(x.min(), x.max(), 200)
-    pdf = kde.evaluate(x_grid)
-    fig, ax = plt.subplots()
-    
-    
-    ax.hist(x,bins=44,normed=True)
-    ax.set_title(Title)
-    ax.plot(x_grid, pdf,color = 'red',label='pdf')
-    ax.legend(loc='best')
-    plt.show()
-    
 
-    return
+# define a binning function
+def mono_bin(Y, X, n = 20):
+  # fill missings with median
+  X2 = X.fillna(np.median(X))
+  r = 0
+  while np.abs(r) < 1:
+    d1 = pd.DataFrame({"X": X2, "Y": Y, "Bucket": pd.qcut(X2, n)})
+    d2 = d1.groupby('Bucket', as_index = True)
+    r, p = stats.spearmanr(d2.mean().X, d2.mean().Y)
+    n = n - 1
+  d3 = pd.DataFrame(d2.min().X, columns = ['min_' + X.name])
+  d3['max_' + X.name] = d2.max().X
+  d3[Y.name] = d2.sum().Y
+  d3['total'] = d2.count().Y
+  d3[Y.name + '_rate'] = d2.mean().Y
+  d4 = (d3.sort_index(by = 'min_' + X.name)).reset_index(drop = True)
+  print "=" * 60
+  print d4
+ 
+mono_bin(data.bad, data.tot_income)
 """
 def hist_num_var(x,Title,numBin):
     
@@ -168,22 +307,32 @@ def single_VAR_AUC(cat_var):
     
     return round(roc_auc_score(y, result.predict())*100,2)
 
+################ Step1: Univariate Analysis ##################################
+    
+
+####### Numerical Variables #####################################
 
 
-hist_cat(df_sample['emp_length'],'Employment Length in Years')
 
-#funded amt
-placeholder = hist_num_var(df_sample['int_rate'].str.replace('%','').astype(float),'interest rate',5)
-cols
 
+#T'delinq_2yrs'
+#The number of 30+ days past-due incidences of delinquency
+#in the borrower's credit file for the past 2 years
+
+df_sample['delinq_2yrs'].value_counts()
+delinq_2yrs = hist_num_var(df_sample['delinq_2yrs'],'Delinquencies - 2years',8)
 #Loan Amount
-loan_amt = hist_num_var(df_sample['loan_amnt'],'Loan Amount',3)
+funded_amnt = hist_num_var(df_sample['funded_amnt'],'funded_amnt',8)
 # Debt to Income Ratio
 dti = hist_num_var(df_sample['dti'],'Debt to Income Ratio',3)
-# Total Number of Loans
-hist_num_var(df_sample['tot_cur_bal'].fillna(0),'Total Current Balance',10)
+# Length of Credit History
+cr_hist_yr = hist_num_var(df_sample['cr_hist_yr'],'Length Credit History',5)
+
 #Purpose
 hist_cat(df_sample['purpose'],'Loan Purpose')
+#Length of Employment
+
+hist_cat(df_sample['emp_length'],'Employment Length in Years')
 
 #Grade
 hist_cat(df_sample['grade'],'Lending Club Loan Grade')
@@ -192,7 +341,7 @@ hist_cat(df_sample['home_ownership'],'Home Ownerhsip')
 #Termn
 hist_cat(df_sample['term'],'Term')
 
-hist_cat(df_sample['title'],'Loan Title')
+#hist_cat(df_sample['title'],'Loan Title')
 
 test = df_sample['int_rate'].unique()
 
@@ -231,72 +380,16 @@ def Logistic_Regression_Analysis(model_vars,continous_vars = []):
     return result
 ##Binned results
     
-model_vars = ['term','home_ownership','grade','purpose','emp_length','loan_amnt_bin','dti_bin']
+model_vars = ['term','home_ownership','grade','purpose','emp_length','funded_amnt_bin','dti_bin']
 results = Logistic_Regression_Analysis(model_vars)
+
+
 
 ##Unbinned results
 model_vars = ['term','home_ownership','grade','purpose','emp_length',]
-continous_vars = ['loan_amnt','dti']
+continous_vars = ['funded_amnt','dti']
 results = Logistic_Regression_Analysis(model_vars,continous_vars)
 
-
-cols
-
-
-
-
-
-
-results.summary()
-#Calculate Auc for Continous Vars No Binning
-
-#le = preprocessing.LabelEncoder()
-
-var = df_sample['loan_amnt']
-#Declare Variables
-y = df_sample['default']
-X = smt.add_constant(var)
-# Regression Analysis
-logit_model=sm.Logit(y,X)
-result=logit_model.fit(disp=0)
-
-round(roc_auc_score(y, result.predict())*100,2)
-
-
-
-
-
-
-## Implement Naive Binning
-#Idea 1 linspace pdf and get appropiate values
-#Idea 2 freq and amt get even groups
-#make a categorical variable the rebin categorical var
-"""
-from scipy import integrate
-kde  = st.gaussian_kde(var,bw_method=0.1)
-x_grid = np.linspace(var.min(), var.max(), 200)
-pdf = kde.evaluate(x_grid)
-cdf = integrate.cumtrapz(pdf, x_grid, initial=0)
-
-np.where(cdf.any() in [0,0.1,0.2,0.3])
-"""
-bins = 4
-from string import ascii_uppercase
-letters = list(ascii_uppercase[0:bins])
-var, bins = pd.cut(df_sample['loan_amnt'],bins = bins,
-                   labels=range(0,bins),retbins = True)
-
-var, bins = pd.cut(df_sample['loan_amnt'],bins = bins ,retbins = True)
-
-le = preprocessing.LabelEncoder()
-#Declare Variables
-y = df_sample['default']
-X = smt.add_constant(le.fit_transform(var))
-# Regression Analysis
-logit_model=sm.Logit(y,X)
-result=logit_model.fit(disp=0)
-
-round(roc_auc_score(y, result.predict())*100,2)
 
 
 
