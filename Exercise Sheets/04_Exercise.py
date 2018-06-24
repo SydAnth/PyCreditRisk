@@ -8,15 +8,18 @@ Created on Sat Apr 21 10:28:12 2018
 
 import numpy as np
 import pandas as pd
-import scipy
-import datetime as dte
+from functools import reduce
 import os
-
+from scipy import integrate
 os.chdir('C:\\Users\\sydma\\Dropbox\\Uni Sach\\Master\\SoSe_18\\Statistical Programming Languages\\04')
 os.getcwd()
 
-###Exercise 1
 
+###############################################################################
+# 1. Generate 100 random samples (x) from a normal distribution with µ = 0, σ = 2. 
+#    For each element of x compute y, such that y1 = 0 and 
+#
+##############################################################################
 
 np.random.seed(1)
 x = np.random.normal(0,2,100)
@@ -30,18 +33,23 @@ for i in range(0,len(x)-1):
     else:     
         y[i+1]=y[i]-x[i]
         
-"""
-###### Excercise 2
-"""
+###############################################################################
+# 2. Compute max and min of the variable Sepal.Length for each species of the iris data. 
+#(Hint: use the family of apply() functions)
+#
+##############################################################################
+
 iris = pd.read_table('iris.txt',sep=';',decimal='.')
 
 iris.columns
 
 iris.groupby(['Species',]).max()['Sepal.Length']
 iris.groupby(['Species',]).min()['Sepal.Length']
+##############################################################################
+# Excursion: How to index Pandas Dataframe 
+#
+##############################################################################
 
-
-###### Excercise 3
 dax30 = pd.read_csv('dax_prices.csv',parse_dates=[0],)
 ## Rename because after import column name ' DAX'
 dax30 = dax30.rename(index=str,columns = {' DAX':'DAX'})
@@ -56,7 +64,11 @@ dax30[dax30['DAX']>7000]
 ### Parenthesis are necessary to combine statements
 dax30[(dax30['DAX']>7000) & (dax30['Date'].dt.year == 2012)]
 
-###### Indexing NaNs
+###############################################################################
+# 3. Write a function for deleting rows of a data frame containing NAs (missing values).
+#     (Hint: use function notnull() method
+#
+##############################################################################
 # pd.notnull() returns a Dataframe with Booleans .any() reduces this to a 
 # series with which to index the original dataframe
 
@@ -70,7 +82,10 @@ clean_data_frame(dax30)
 ##### Existing Function in pandas library
 dax30.dropna()
 
-######## Exercise 4 Write a function which returns Fibonacci Number
+###############################################################################
+#4. Write a recursive function, which returns the n Fibonaci number 
+#   y_n = y_n−1 + y_n−2,∀n > 2. (Hint: do not use loops and think about the ﬁrst numbers)
+##############################################################################
 
 ### Takes way too long for large numbers
 def recursive_fibonacci(n):
@@ -82,76 +97,47 @@ def recursive_fibonacci(n):
 
 recursive_fibonacci(10)
 
-#### Works with large numbers
+#### Alternative Solution
+#### Works with large numbers but is a cheat since reduce basically
+#### replaces for loop
+fib = lambda n:reduce(lambda x,n:[x[1],x[0]+x[1]], range(n),[0,1])[0]
+fib(10)       
 
-def quicker_fibonacci(n):
-    x2 = 0
-    x1 = 1
-    for i in range(0,n-1):
-         x = x1 + x2
-         x2 = x1
-         x1 = x
-
-    return x
-     
-quicker_fibonacci(10)       
-
-######## Exercise 5 Write a function which computes densities and cdf
+###############################################################################
+# 5. Write functions, to compute the densities and probabilities for a 
+#    random variable following the normal distribution X ∼ N(µ,σ2)
+#
+##############################################################################
 
 ###Density
 # Note: ** are power operations in Python
 
-
-"""
-class random_var:
-    
-        def __init__(self,name,x,distribution,mu,sigma):
-                self.name = name
-                self.x = x
-                self.distribution = distribution
-                self.mu = mu
-                self.sigma = sigma
-        
-        def normal_density(x,mu=0,sigma=1):
-            import numpy as np
-            return(1/(2*np.pi*sigma**2)**0.5*np.exp(-(x-mu)**2/(2*sigma**2)))
-        
-        def cdf_normal(x):
-            import scipy
-            return scipy.integrate.quad(lambda x: normal_density(x),-np.inf,x)[0]
-
-
-random_var.name
-"""
-
-
-def normal_density(x,mu=0,sigma=1):
-        import numpy as np
+def normal_density(x,mu=0,sigma=1):   
         return(1/(2*np.pi*sigma**2)**0.5*np.exp(-(x-mu)**2/(2*sigma**2)))
         
+###Normal Distribution        
 def cdf_normal(x):
-    from scipy import integrate
-    return scipy.integrate.quad(lambda x: normal_density(x),-np.inf,x)[0]
-
+    return integrate.quad(lambda x: normal_density(x),-np.inf,x)[0]
 
 normal_density(5)
 cdf_normal(5)
-#Calc Check
-from scipy.stats import norm
-norm.pdf(5)
-norm.cdf(5)
 
-######## Exercise 6 Write a function which calculates OLS Coefficients
+
+###############################################################################
+# 6. Write a function to compute OLS coeﬃcients and standard errors for a dataframe, 
+#    take into account the possibility of missing values. 
+#    (Hint: Use the dataset EuStockMarkets as a starting point.)
+#
+##############################################################################
 
 EUStoxx=pd.read_table('EuStockMarkets.txt',sep=';',decimal='.')
 
-#select = [col for col in input_frame.columns if col != '%s'%(y)]
 
 def OLS_regression(input_frame,y,X,constant = True):
     import pandas as pd
     import numpy  as np
     
-    y=input_frame[y]
+    y=input_frame[y].dropna() #Drop Misings from Dataframe
 
     if constant == True:
         X = input_frame[[col for col in X]]
@@ -170,7 +156,12 @@ def OLS_regression(input_frame,y,X,constant = True):
     return Results
 
 OLS_regression(EUStoxx,'DAX',['CAC','SMI','FTSE']) 
-#### Using Existing Software for Liner Regression Models
+
+
+###############################################################################
+# For purposes of Comparison 2 popular Python Libraries for Linear Regression
+# models are introduced
+##############################################################################
 
 # With Statsmodels
 import statsmodels.api as sm 
@@ -178,6 +169,7 @@ import statsmodels.api as sm
 y = EUStoxx['DAX']
 X = sm.add_constant(EUStoxx[[x for x in EUStoxx.columns if x!= 'DAX']])
 lm = sm.OLS(y,X).fit()
+lm.summary()
 ## Way better Output
 
 
@@ -188,5 +180,5 @@ X =EUStoxx[[x for x in EUStoxx.columns if x!= 'DAX']]
 y = EUStoxx['DAX']
 from sklearn import linear_model
 lm2 = linear_model.LinearRegression()
-lm2.fit(X,y).summary()
+lm2.fit(X,y)
 print(lm2.intercept_,lm2.coef_)

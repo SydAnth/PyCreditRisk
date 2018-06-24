@@ -9,7 +9,6 @@ Created on Wed Apr 18 18:38:19 2018
 
 #%reset\
 
-import numpy as np
 import pandas as pd
 import os
 
@@ -43,10 +42,10 @@ countries['unemployment(y)'].argmin()
 #Ranges
 countries.max()-countries.min()
 
-###############################################################################
+##############################################################################
 # 2 Load the R dataset mtcars and ﬁgure out the variables using help().
 ##############################################################################
-### rpy2 is a neat way to inderact with python
+### rpy2 is a neat way to inderact with r in python
 import rpy2.robjects as ro
 from rpy2.robjects import pandas2ri
 
@@ -59,43 +58,68 @@ pandas2ri.deactivate()
 # mtcars=pd.read_table('mtcars.txt',sep=';')
 #note use . as decimal makes life easier
 mtcars.info()
-######### Exercise 3
+##############################################################################
+# 3 Sort mtcars by columns mpg and cyl in descending order.
+##############################################################################
 mtcars.columns
 mtcars=mtcars.sort_values(by=['mpg','cyl'],ascending=False)
 
-######### Exercise 4
+##############################################################################
+# 4 Remove the column carb.
+##############################################################################
 mtcars.drop(['carb'],axis=1)
 
-######### Test Write Data to SQL Table
-from sqlalchemy import create_engine
-engine = create_engine('sqlite:///SPL_Test.db')
-mtcars.to_sql('TBL_mtcars',engine)
 
-######### Exercise 5
+##############################################################################
+# 5 Switch the columns mpg and hp and save the resulting 
+#   data frame into a variable r.cars.
+##############################################################################
 mtcars.columns
 r_cars=mtcars[['hp', 'cyl', 'disp', 'mpg', 'drat', 'wt', 'qsec', 'vs', 'am', 'gear',
        'carb']]
 
-######### Exercise 6
-########### Test Read Table from SQL
-##However had to change Column name
-pd.read_sql('SELECT * FROM TBL_mtcars where instr(cars,"Merc")!=0',engine)
-
+##############################################################################
+# 6 Extract only the cars of brand Mercedes by ﬁnding the indices 
+#   of row names containing the string ’Merc’ (Hint: use function grep).
+##############################################################################
 
 mtcars.loc[mtcars.index.str.contains('Merc')]
 
-######### Exercise 7
-
+##############################################################################
+# 7 Read the ﬁle dax prices.csv into a data frame dax.prices
+##############################################################################
 
 dax30 = pd.read_csv('dax_prices.csv',parse_dates=[0],)
-######### Exercise 8
+##############################################################################
+# 8 Inspect the ﬁrst rows of dax.prices. Are the prices correctly 
+#   interpreted as numeric?
+##############################################################################
+
 dax30.info()
 dax30.head()
-######### Exercise 9
+
+
+##############################################################################
+# 9 Rename the column DAX to DAX Prices
+#
+##############################################################################
+
 dax30 = dax30.rename(index=str,columns = {' DAX':'DAX Prices'})
-######### Exercise 10
+
+
+##############################################################################
+# 10 Write dax.prices to disk as .txt ﬁle, with “;” as separator 
+#     and “,” as decimal point.
+##############################################################################
+
+
 dax30.to_csv('dax_prices.txt',sep=';',decimal = ',')
-######### Exercise 11
+
+
+##############################################################################
+# 11 Read dax prices.txt into a data frame dax.prices.txt. 
+#    Make sure the prices are correctly interpreted as numeric.
+##############################################################################
 pd.read_csv('dax_prices.txt',sep=';',decimal=',')
 
 
