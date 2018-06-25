@@ -1,6 +1,6 @@
 [<img src="https://github.com/QuantLet/Styleguide-and-FAQ/blob/master/pictures/banner.png" width="888" alt="Visit QuantNet">](http://quantlet.de/)
 
-## [<img src="https://github.com/QuantLet/Styleguide-and-FAQ/blob/master/pictures/qloqo.png" alt="Visit QuantNet">](http://quantlet.de/) **HistofCor** [<img src="https://github.com/QuantLet/Styleguide-and-FAQ/blob/master/pictures/QN2.png" width="60" alt="Visit QuantNet 2.0">](http://quantlet.de/)
+## [<img src="https://github.com/QuantLet/Styleguide-and-FAQ/blob/master/pictures/qloqo.png" alt="Visit QuantNet">](http://quantlet.de/) **PyEx1** [<img src="https://github.com/QuantLet/Styleguide-and-FAQ/blob/master/pictures/QN2.png" width="60" alt="Visit QuantNet 2.0">](http://quantlet.de/)
 
 ```yaml
 
@@ -10,18 +10,16 @@ Published in : SPL
 
 Description : Solutions to Exercises Day 1
 
-Keywords : 'plot, vizualization, random, histogram, correlation, clustering, confidence-interval,
-mean'
+Keywords : 'data import, matrices, basic operations
 
 Author : Tobias Blücher, Niklas Kudernak, Sydney Richards
 
-Datafile : bh1996
 ```
 
 
 
-### R Code:
-```r
+### Pyhton Code:
+```python
 
 
 import numpy as np
