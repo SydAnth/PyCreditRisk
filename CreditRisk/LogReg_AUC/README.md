@@ -17,7 +17,7 @@ Author : Tobias Blücher, Niklas Kudernak, Sydney Richards
 
 ```
 
-[Picture1](ROC.png)
+![Picture1](ROC.png)
 
 
 ### Pyhton Code:
