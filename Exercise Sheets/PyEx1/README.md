@@ -10,7 +10,7 @@ Published in : SPL
 
 Description : Solutions to Exercises Day 1
 
-Keywords : 'data import, matrices, basic operations
+Keywords : 'data import, matrices, basic operations'
 
 Author : Tobias Blücher, Niklas Kudernak, Sydney Richards
 
