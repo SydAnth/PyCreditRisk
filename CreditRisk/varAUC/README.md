@@ -23,15 +23,15 @@ Author : Tobias Blücher, Niklas Kudernak, Sydney Richards
 ### Pyhton Code:
 ```python
 
-########## Statisitcal Programming Languagues SS 2018 ##########
+########## Statistical Programming Languagues SS 2018 ##########
 ########## Project: Credit Risk Scorecard in Python   ##########
 ########## Members: Tobias Blücher, Niklas Kudernak  ##########
 ##########          Sydney Richards                   ##########
 ########## 
 # Project Design: To create a Scorecard to classify Customer   #
-# Loan applications according to the charactheristics of the   #
+# Loan applications according to the characteristics of the   #
 # applicant. While the grouping shall be done using a Logistic #
-# Regression. The scorecard that is develpod should be usuable #
+# Regression. The scorecard that is develop should be usable #
 # by non statisticians, since Lending Club is a peer-to-peer   #
 # platform.
 
@@ -71,7 +71,7 @@ status = ['Issued','Does not meet the credit policy. Status:Charged Off',
                     'Does not meet the credit policy. Status:Fully Paid']
 df = df[~df['loan_status'].isin(status)]
 
-############# Take sample and define dafualt ###################
+############# Take sample and define default ###################
 
 ######################## Step 2: Create Sample ################################  
 
