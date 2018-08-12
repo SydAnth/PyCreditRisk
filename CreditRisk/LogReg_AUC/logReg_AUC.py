@@ -87,13 +87,13 @@ df_sample['default'] = np.where(np.isin(df_sample['loan_status'],pass_criteria),
 
 
 ######################## Step 4: Model Training  ############################## 
+# After Selecting the characteristics a model is built for the eventual      #
+# scorecard classification a logistic regression model is used               #
+# a constant is included in the model                                        #
+# the sklearn package from which the logistic regression model is taken      #
+# requires that all variables are encoded as numerical variables			 #
+# in this function a graph is also included along with the  AUC of the model #
 
-### After Selecting the characteristics a model is built for the eventual 
-### scorecard classification a logistic regression model is used
-### a constant is included in the model
-### the sklearn package from which the logistic regression model is taken
-### requires that all variables are encoded as numerical variables
-### in this function a graph is also included along with the  AUC of the model
 def Logistic_Regression_Analysis(model_vars,continous_vars = []):
     
     le = preprocessing.LabelEncoder()

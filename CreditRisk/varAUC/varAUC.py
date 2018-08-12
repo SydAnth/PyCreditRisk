@@ -78,34 +78,61 @@ df_sample['default'] = np.where(np.isin(df_sample['loan_status'],pass_criteria),
 
 
 
-########### Function for Default Frequency
+
+################ A: Evaluating Characteristics #################################
+
+# In order to evaluate characteristics we use the Area under Curve#
+# of the Receiver Operating Characteristic for a single variable  #
+# model. While such a model should not be                         #
+# used for default prediction it allows use to judge whether or   #
+# not to include the characteristic under consideration.          #
+# As a rule of thumb a characteristic can be judged as follows:   #
+# - AUC > 60 very powerful characteristic should definitely be    #
+# 		included											      #
+# - AUC > 55 powerful characteristic should be included even if   #
+#		  correlated with another variable						  #
+# - AUC > 52 moderate characteristic should if it adds new insight#
+#		  into quality of loan applicant   						  #		
+#		  correlated with another variable						  #
+# The following functions are used throughout the script to       #
+# for characteristic evaluation                                   #	
+
+
+######## Function 1: Calculate Single VAR AUC ########
+# Initially, we would like to now what is the Observed Default   #
+# Frequency (ODF) for each attribute of a given characteristic.  #	
+# We can than see if there are differences among the different   #
+# Attributes of a the characteristic.                            #
+#Input: pd.Series containing variable to be observed             #
+#Output pd.Series containing ODFs with Attributes as index       #
+
 def Calc_Default_Freq_Cat(cat_var):
     return df_sample['default'].groupby(cat_var).sum() / cat_var.value_counts()
 
 
 
-
-################ A: Evaluating Characterstics #################################
-
-### In order to evaluate charachteristics a model ist built with each character
-### as its only explanatory variable. From those model a crude AUC measure is
-### calculated with which to give an indication of its usefullness
-### also a graph is created to give the analyst an overview of bin size and 
-### odf in each bin.
-### For this purpose a number of functions were set up
-
-
-######## Function 1: Calculate Single VAR AUC ########
-
+######## Function 2: Calculate Single VAR AUC ########
+# We measure the predictive power of the characteristic using AUC#
+# For this we need to set up a Logistic_Regression_Analysis with #	
+# a constant and a single characteristic.					     #
+# Attributes of a the characteristic.                            #
+# To this end we use the statsmodels package in Python which is  #
+# concise and easy to implement.							     #
+# For the model to work we need to encode the values of our      #
+# characteristic.                                                #
+# Our functions checks if the Matrix of characteristic and 		 #
+# constant is non-singular and invertible                        #                                                		 #
+#Input: pd.Series containing variable to be observed             #
+#Output: scalar containing AUC Score                             #
 
 def single_VAR_AUC(cat_var):
-    #Label Encoder necessary since stats
+    #Label Encoder
     le = preprocessing.LabelEncoder()
     #Declare Variables
     y = df_sample['default']
     X = smt.add_constant(le.fit_transform(cat_var))
     # Regression Analysis
-    if np.isfinite(np.linalg.cond(X)):
+    if np.isfinite(np.linalg.cond(X)): # Check for non-singular matrix
         logit_model=sm.Logit(y,X)
         result=logit_model.fit(disp=0)
         
@@ -115,18 +142,33 @@ def single_VAR_AUC(cat_var):
     else:
         print('Matrix is not invertible')
         return 0
-    
+
 
 ######## Function 3: Create Histograms for Categorical Vars ########
-
+# We visualize the the behavior of the ODFs across Attributes    #
+# Ideally we look for large differences within groups.           #	
+# Large Differences in the ODF among attributes imply that       #
+# the characteristic can be used to discriminate between         #
+# which will pay back their loan and applicants which will not.  #
+# Ideally there exist a minimum "statistical mass" of            #
+# observations in each attribute. Such that if the model is used #
+# in the future these attributes do not become obsolete.         #
+# The AUC is displayed above the chart.                          #
+#Input: x: pd.Series containing variable to be observed          #
+#       Title: Title of the Diagram                              #
+#Output: Histogram with number of Observations and ODF across    #
+#        Attributes												 #		
     
 def hist_cat(x,Title):
+    #call single_VAR_AUC function
     auc = single_VAR_AUC(x)
+	#calculate ODF
     odf = Calc_Default_Freq_Cat(x).sort_index()
     freq_x = x.value_counts().sort_index()
     digits = len(str(max(freq_x)))-1
     fig, ax1 = plt.subplots()
-    ax1.bar(freq_x.index,freq_x, color='blue'
+	
+    ax1.bar(freq_x.index.astype(str),freq_x, color='blue'
              ,alpha=1,label='Obs')
     ax1.set_title(Title + '\n AUC: ' + str(auc) +' %' )
     ax1.set_ylabel('Observations')

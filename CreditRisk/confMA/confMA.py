@@ -78,12 +78,23 @@ df_sample['default'] = np.where(np.isin(df_sample['loan_status'],pass_criteria),
 
 
 
+######################## Step 5: Quality Checks  ############################## 
+# Finally, we use additional performance measures to evaluate 		#
+# the predictive power of our model. We use the Brier Score   		#
+# which is used for predictions of discrete mutually          		#
+# excludable events. We also plot a confusion_matrix          		#
+# In the field of machine learning and specifically the 			#
+# problem of statistical classification,a confusion matrix, 		#
+# also known as an error matrix is a specific table layout 		#
+#that allows visualization of the performance of an algorithm,		#
+# typically a supervised learning one 								   #
+# (in unsupervised learning it is usually called a matching matrix).# 
+# Each row of the matrix represents the instances in a				#
+# each column represents the instances in an actual class 			#
+# (or vice versa) The name stems from the fact that it makes 		#
+# it easy to see if the system is confusing two classes 			#
+# (i.e. commonly mislabeling one as another)  						#
 
-########################  Brier Score  ############################## 
-
-### The Brier Score is a proper score function which measures the
-### accuracy of probabilistic predictions in a set of mutually
-### exclusive outcomes i.e. default, non-default
 
 model_vars = ['term','home_ownership','grade','purpose','emp_length',]
 continous_vars = ['funded_amnt','dti']    
