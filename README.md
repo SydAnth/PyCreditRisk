@@ -40,12 +40,14 @@ Author : Tobias Blücher, Niklas Kudernak, Sydney Richards
 # applicant. While the grouping shall be done using a Logistic #
 # Regression. The scorecard that is developed should be usable #
 # by non statisticians, since Lending Club is a peer-to-peer   #
-# platform.													   # 
+# platform.						       # 
 # For this reason all numerical variables used for classifi-   #
 # cation should be grouped into categories that optimize       #
 # their explanatory power.                                     #
 #### Dataset: Kaggle Competition kaggle datasets download -d wendykan/lending-club-loan-data
 #### Link: https://www.kaggle.com/wendykan/lending-club-loan-data/data
+#### Note that original dataset was too large to upload to GitHub (100Mb)
+#### that is why only sample was included
 #### Packages Required
 import pandas as pd
 import numpy as np
