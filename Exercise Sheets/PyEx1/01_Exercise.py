@@ -1,9 +1,5 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Tue Apr 17 11:03:08 2018
-SPL Exercise sheet 1
-"""
-
+#  Statistical Programming Languages SoSe2018, HU Berlin, Chair of Statistics
+#  Exercises Day 1
 
 import numpy as np
 import pandas as pd

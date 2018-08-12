@@ -339,7 +339,6 @@ stools.q_stat(tsmodel.resid,nobs=len(tsmodel.resid))
 fig = plt.figure() 
 qq_ax = fig.add_subplot()
 sm.qqplot(y, line='s', ax=qq_ax)
-qq_ax.set_title('QQ Plot')  #Why no work ?
 plt.show()
 
 

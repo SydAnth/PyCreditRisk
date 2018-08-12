@@ -1,13 +1,6 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Wed Apr 18 18:38:19 2018
+#  Statistical Programming Languages SoSe2018, HU Berlin, Chair of Statistics
+#  Exercises Day 2 
 
-############Excercise Sheet 2 #####################
-#SPL SS 18
-@author: sydma
-"""
-
-#%reset\
 
 import pandas as pd
 import os

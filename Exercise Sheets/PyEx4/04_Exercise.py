@@ -1,10 +1,5 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Sat Apr 21 10:28:12 2018
-########## Exercise Sheet 4 #########
-
-@author: sydma
-"""
+#  Statistical Programming Languages SoSe2018, HU Berlin, Chair of Statistics
+#  Exercises Day 4 
 
 import numpy as np
 import pandas as pd
