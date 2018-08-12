@@ -4,14 +4,21 @@
 
 ```yaml
 
-Name of QuantLet : varAUC
+Name of QuantLet : WOE_bin
 
 Published in : SPL
 
-Description : Checks the predictive power of single characteristics.
-              Shows the Observed default frequency across characteristic classes.
+Description :   For our approach to work with continuous numeric variables we 
+			    we will have to group the characteristic so that we end up    
+                with a given number of intervals. While we do lose information
+                and degrees of freedom with this approach, it does have the   
+                added benefit of simplifying the relationship between           
+                characteristic and the default variable. For example if we    
+			    categorize annual income a lender could then judge the quality
+			    of the debtor by looking at which category the applicant lands
+				in.                                                           
 
-Keywords : 'logistic regression, AUC, odf, default risk'
+Keywords : 'recursive, WOE, IV'
 
 Author : Tobias Blücher, Niklas Kudernak, Sydney Richards
 
