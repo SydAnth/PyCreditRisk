@@ -8,7 +8,7 @@
 # applicant. While the grouping shall be done using a Logistic #
 # Regression. The scorecard that is developed should be usable #
 # by non statisticians, since Lending Club is a peer-to-peer   #
-# platform.													   # 
+# platform.													           # 
 # For this reason all numerical variables used for classifi-   #
 # cation should be grouped into categories that optimize       #
 # their explanatory power.                                     #
@@ -249,7 +249,7 @@ df_sample = df_sample.drop(vars_to_drop,axis=1)
 # it is important to select characteristics which are not only    #
 # related to the default probability but also are categorized     #
 # so that the relationship between defaults and the variable      #
-# is easy to follow.									          #
+# is easy to follow.									                 #
 
 
 
@@ -262,12 +262,12 @@ df_sample = df_sample.drop(vars_to_drop,axis=1)
 # not to include the characteristic under consideration.          #
 # As a rule of thumb a characteristic can be judged as follows:   #
 # - AUC > 60 very powerful characteristic should definitely be    #
-# 		included											      #
+# 		included											                 #
 # - AUC > 55 powerful characteristic should be included even if   #
-#		  correlated with another variable						  #
+#		  correlated with another variable						       #
 # - AUC > 52 moderate characteristic should if it adds new insight#
-#		  into quality of loan applicant   						  #		
-#		  correlated with another variable						  #
+#		  into quality of loan applicant   						       # 		
+#		  correlated with another variable						       #
 # The following functions are used throughout the script to       #
 # for characteristic evaluation                                   #	
 
@@ -394,7 +394,7 @@ class WOE_bin:
 # or methods which we will use to determine the optimal   #
 # bins. The advantage of using class objects is that we   # 
 # can store intermediate and end results with a single    #
-# object.  												  #
+# object.  												         #
     
     ###### Initializes Class Object
     def __init__(self,bkt_num = 20, min_bkt = 5,decimals = 0):
@@ -410,7 +410,7 @@ class WOE_bin:
 	# This function gives us our initial binning which we      #
 	# will continue to use below.                              #
 	# The functions creates 4 data frames with the last giving #
-	# us a short summary statistic 							   #
+	# us a short summary statistic 							       #
 	# n: is the number of buckets or bins                      #
 	# d1: is an intermediate dataframe that consists of the    #
 	# original variable, the default variable and a new        # 
@@ -454,7 +454,7 @@ class WOE_bin:
         self.initial_bin = list(d4["min_"+X.name].sort_values())
     
     def _Calc_IV(self,X,Y,a):
-        # This function is similar to first_bin, but is called     #
+       # This function is similar to first_bin, but is called     #
 		# called by get_combinations to calculate IVs for different#
 		# binning possibilities.                                   #
 		# a: bin which is passed and den shortened by one          # 
@@ -476,7 +476,7 @@ class WOE_bin:
         return d4, d4.IV.sum()
     
     def get_combinations(self,bins):
-        # Starting from the initial binning we generate a list of #
+       # Starting from the initial binning we generate a list of     #
 		# combinations for which we call the CALC_IV function the      #
 		# process is repeated until we reach the target number of bins #
 		# The binning with the highest Information Value is saved.     #      
@@ -518,3 +518,32 @@ empty_bin.first_bin(df_sample.default, df_sample.annual_inc)
 empty_bin.createCatVar()
 df_sample['annual_inc_cat'] = empty_bin.Cat_Var
 hist_cat(empty_bin.Cat_Var,'Annual Income in Dollars')
+
+
+def render_mpl_table(data, col_width=3.0, row_height=0.625, font_size=14,
+                     header_color='#40466e', row_colors=['#f1f1f2', 'w'], edge_color='w',
+                     bbox=[0, 0, 1, 1], header_columns=0,
+                     ax=None, **kwargs):
+    if ax is None:
+        size = (np.array(data.shape[::-1]) + np.array([0, 1])) * np.array([col_width, row_height])
+        fig, ax = plt.subplots(figsize=size)
+        ax.axis('off')
+
+    mpl_table = ax.table(cellText=data.values, bbox=bbox, colLabels=data.columns, **kwargs)
+
+    mpl_table.auto_set_font_size(False)
+    mpl_table.set_fontsize(font_size)
+
+    for k, cell in six.iteritems(mpl_table._cells):
+        cell.set_edgecolor(edge_color)
+        if k[0] == 0 or k[1] < header_columns:
+            cell.set_text_props(weight='bold', color='w')
+            cell.set_facecolor(header_color)
+        else:
+            cell.set_facecolor(row_colors[k[0]%len(row_colors) ])
+    return ax
+
+render_mpl_table(round(empty_bin.best_bin_stats,2), header_columns=0, col_width=3.0)
+
+
+

@@ -17,8 +17,8 @@ Author : Tobias Blücher, Niklas Kudernak, Sydney Richards
 
 ```
 
-![Picture1](emp_len_AUC.png)
-![Picture1](loan_purpose_AUC.png)
+![Picture1](annual_income.png)
+![Picture1](sum_stats.png)
 
 ### Pyhton Code:
 ```python
